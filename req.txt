@@ -1,0 +1,5 @@
+termcolor
+requests
+Pillow
+readline
+prettytable
