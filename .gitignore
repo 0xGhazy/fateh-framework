@@ -1,0 +1,13 @@
+
+# Virtual environment and IDE environment
+vevn
+__pycache__
+.idea
+
+# Database and logs
+logs
+database.db
+
+# Test cases
+tests
+test_environment.py
