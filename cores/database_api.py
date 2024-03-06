@@ -2,7 +2,8 @@ import sqlite3
 from pathlib import Path
 import os
 from typing import Dict, List, Optional, Tuple
-from cores.fateh_logger import FatehLogger
+from fateh_logger import FatehLogger
+from agent import Agent
 
 
 # Set database directory
@@ -72,7 +73,23 @@ class DatabaseAPI:
             constraint_failed_in = str(integrity_error).split(": ")[1]
             self._db_log("EXCEPTION", f"IntegrityError occurred while insertion with client: {client} | Error message: {constraint_failed_in}")
             return False
+        
+    def get_agents(self) -> List[Agent]:
+        try:
+            agents = []
+            result = self.cursor.execute("SELECT * FROM agents;")
+            for row in result:
+                _, name, agent_type, host, port, path = row
+                agents.append(Agent(name, agent_type, host, port, path))
+            if agents:
+                self._db_log("INFO", f"Agents are loaded successfully [{len(agents)}] agent loaded")
+            return agents
+        except Exception as e:
+            self._db_log("EXCEPTION", f"Error occurred while loading agents: {e}")
 
 
 if __name__ == "__main__":
-    x = DatabaseAPI()
+    test_logger = FatehLogger()
+    x = DatabaseAPI(test_logger)
+    result = x.get_agents()
+    
