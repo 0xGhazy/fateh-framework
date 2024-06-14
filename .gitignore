@@ -8,6 +8,5 @@ logs
 database.db
 
 # Test cases
-tests
-test_environment.py
 venv
+test

