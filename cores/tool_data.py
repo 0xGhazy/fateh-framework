@@ -5,7 +5,7 @@ class CommandModes:
     server_commands = ["generator", "start_listener", "geo_ip", "_help",
                        "list_db", "del_db"]
 
-    generator_commands = ["set_host ", "set_port ", "set_name ",
+    generator_commands = ["set_host ", "set_port ", "set_name ", "set_agent ",
                           "generate", "show", "_help"]
 
     shell_commands = ["cd", "get_file", "download_file", "find_file",

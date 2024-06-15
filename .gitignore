@@ -10,3 +10,4 @@ database.db
 # Test cases
 venv
 test
+dist
