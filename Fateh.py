@@ -1,10 +1,10 @@
 from os import system
 from termcolor import colored
-from cores.tool_data import banner, CommandModes, main_help
-from cores.shell_generator import ShellGenerator
-from cores.autocompleter import CommandCompleter
-from cores.functions import checking_requirements, ip_lookup
-from cores.connection_handler import Handler
+from core.tool_data import banner, CommandModes, main_help
+from core.agent_generator import ShellGenerator
+from core.autocompleter import CommandCompleter
+from core.functions import checking_requirements, ip_lookup
+from core.connection_handler import Handler
 import os
 
 class Fateh:
